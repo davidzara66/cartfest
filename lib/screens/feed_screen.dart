@@ -72,6 +72,10 @@ class _FeedScreenState extends State<FeedScreen> {
         ),
         const Spacer(),
         IconButton(
+          onPressed: _openFindFriends,
+          icon: const Icon(Icons.person_search_outlined, color: Colors.white),
+        ),
+        IconButton(
           onPressed: _createPost,
           icon: const Icon(Icons.add_box_outlined, color: Colors.white),
         ),
@@ -157,6 +161,114 @@ class _FeedScreenState extends State<FeedScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _openFindFriends() async {
+    final provider = context.read<MockDataProvider>();
+    final searchCtrl = TextEditingController();
+    String query = '';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF111B43),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModal) {
+          final users = provider.users
+              .where((u) => u.id != provider.currentUser.id)
+              .where((u) {
+                final q = query.trim().toLowerCase();
+                if (q.isEmpty) return true;
+                return u.name.toLowerCase().contains(q) ||
+                    u.handle.toLowerCase().contains(q);
+              })
+              .toList();
+
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: MediaQuery.of(ctx).padding.top + 16,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+              ),
+              child: SizedBox(
+                height: MediaQuery.of(ctx).size.height * 0.72,
+                child: Column(
+                  children: [
+                    const Text(
+                      'Buscar amigos',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: searchCtrl,
+                      onChanged: (v) => setModal(() => query = v),
+                      decoration: const InputDecoration(
+                        hintText: 'Buscar por nombre o @usuario',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: users.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No se encontraron usuarios',
+                                style: TextStyle(color: AppTheme.textSecondary),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: users.length,
+                              itemBuilder: (context, i) {
+                                final user = users[i];
+                                final following = provider.followingIds
+                                    .contains(user.id);
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  leading: CircleAvatar(
+                                    child: ClipOval(
+                                      child: SizedBox.expand(
+                                        child: SmartImage(
+                                          source: user.avatarUrl,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(user.name),
+                                  subtitle: Text(user.handle),
+                                  trailing: FilledButton(
+                                    onPressed: () {
+                                      provider.toggleFollow(user.id);
+                                      setModal(() {});
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: following
+                                          ? const Color(0xFF2A355E)
+                                          : AppTheme.neonMagenta,
+                                    ),
+                                    child: Text(
+                                      following ? 'Siguiendo' : 'Seguir',
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

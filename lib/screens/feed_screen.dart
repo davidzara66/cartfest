@@ -434,106 +434,97 @@ class _FeedScreenState extends State<FeedScreen> {
               ],
             ),
           ),
-          Stack(
-            children: [
-              Container(
-                height: 260,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: AppTheme.neonCyan.withValues(alpha: 0.35),
-                  ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _badgeLabel('Setup', AppTheme.neonMagenta),
+                _badgeLabel('Pais: ${user.country}', const Color(0xFF2E67D9)),
+                _badgeLabel('Dueno: ${vehicle.ownerName}', AppTheme.neonCyan),
+                _badgeLabel(
+                  'Seguidores: $fakeFollowers',
+                  const Color(0xFFFF8C3A),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      SmartImage(
-                        source: vehicle.imageUrl,
-                        height: 260,
-                        width: double.infinity,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.25),
-                              Colors.black.withValues(alpha: 0.6),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 12,
-                left: 12,
-                child: _badgeLabel('Setup', AppTheme.neonMagenta),
-              ),
-              Positioned(
-                top: 12,
-                right: 10,
-                child: FilledButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => VehicleDetailScreen(vehicle: vehicle),
-                      ),
-                    );
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.neonMagenta,
-                  ),
-                  child: const Text('Carro 360'),
-                ),
-              ),
-              Positioned(
-                left: 12,
-                right: 12,
-                bottom: 70,
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    _badgeLabel(
-                      'Pais: ${user.country}',
-                      const Color(0xFF2E67D9),
-                    ),
-                    _badgeLabel(
-                      'Dueno: ${vehicle.ownerName}',
-                      AppTheme.neonCyan,
-                    ),
-                    _badgeLabel(
-                      'Seguidores: $fakeFollowers',
-                      const Color(0xFFFF8C3A),
-                    ),
-                    _badgeLabel('Puntos: $ownerPoints', AppTheme.neonOrange),
-                    _badgeLabel('Dueno del carro', const Color(0xFF4EBA7C)),
-                  ],
-                ),
-              ),
-              if (topMods.isNotEmpty)
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  bottom: 10,
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: topMods
-                        .map((m) => _badgeLabel(m, const Color(0xFF1F2A56)))
-                        .toList(),
-                  ),
-                ),
-            ],
+                _badgeLabel('Puntos: $ownerPoints', AppTheme.neonOrange),
+              ],
+            ),
           ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            height: 250,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: AppTheme.neonCyan.withValues(alpha: 0.35),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  SmartImage(
+                    source: vehicle.imageUrl,
+                    height: 250,
+                    width: double.infinity,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.18),
+                          Colors.black.withValues(alpha: 0.55),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: FilledButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                VehicleDetailScreen(vehicle: vehicle),
+                          ),
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppTheme.neonMagenta,
+                      ),
+                      child: const Text('Carro 360'),
+                    ),
+                  ),
+                  Positioned(
+                    left: 12,
+                    bottom: 12,
+                    child: _badgeLabel(
+                      'Dueno del carro',
+                      const Color(0xFF4EBA7C),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (topMods.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: topMods
+                    .map((m) => _badgeLabel(m, const Color(0xFF1F2A56)))
+                    .toList(),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.all(14),
             child: Column(

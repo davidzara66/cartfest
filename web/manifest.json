@@ -1,11 +1,11 @@
 {
-    "name": "cartfest",
-    "short_name": "cartfest",
+    "name": "Carfest",
+    "short_name": "Carfest",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#090F2A",
+    "theme_color": "#A93CFF",
+    "description": "Comunidad de tuning, eventos y competencia.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

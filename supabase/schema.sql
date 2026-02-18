@@ -72,6 +72,28 @@ create table if not exists public.story_items (
   created_at timestamptz default now()
 );
 
+create table if not exists public.post_likes (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  post_id text not null references public.feed_posts(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (user_id, post_id)
+);
+
+create table if not exists public.saved_posts (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  post_id text not null references public.feed_posts(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (user_id, post_id)
+);
+
+create table if not exists public.post_comments (
+  id text primary key,
+  post_id text not null references public.feed_posts(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  text text not null,
+  created_at timestamptz default now()
+);
+
 alter table public.profiles enable row level security;
 alter table public.follows enable row level security;
 alter table public.direct_messages enable row level security;
@@ -79,6 +101,9 @@ alter table public.event_chat enable row level security;
 alter table public.event_registrations enable row level security;
 alter table public.feed_posts enable row level security;
 alter table public.story_items enable row level security;
+alter table public.post_likes enable row level security;
+alter table public.saved_posts enable row level security;
+alter table public.post_comments enable row level security;
 
 -- profiles
 create policy "profiles_select_all" on public.profiles for select to authenticated using (true);
@@ -111,3 +136,17 @@ create policy "feed_posts_update_own" on public.feed_posts for update to authent
 create policy "stories_select_all" on public.story_items for select to authenticated using (true);
 create policy "stories_insert_own" on public.story_items for insert to authenticated with check (auth.uid() = user_id);
 create policy "stories_delete_own" on public.story_items for delete to authenticated using (auth.uid() = user_id);
+
+-- likes
+create policy "post_likes_select_all" on public.post_likes for select to authenticated using (true);
+create policy "post_likes_insert_own" on public.post_likes for insert to authenticated with check (auth.uid() = user_id);
+create policy "post_likes_delete_own" on public.post_likes for delete to authenticated using (auth.uid() = user_id);
+
+-- saved posts
+create policy "saved_posts_select_own" on public.saved_posts for select to authenticated using (auth.uid() = user_id);
+create policy "saved_posts_insert_own" on public.saved_posts for insert to authenticated with check (auth.uid() = user_id);
+create policy "saved_posts_delete_own" on public.saved_posts for delete to authenticated using (auth.uid() = user_id);
+
+-- comments
+create policy "post_comments_select_all" on public.post_comments for select to authenticated using (true);
+create policy "post_comments_insert_own" on public.post_comments for insert to authenticated with check (auth.uid() = user_id);

@@ -84,7 +84,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(100),
-                        child: Image.asset('assets/logo_icon.png', width: 170, height: 170),
+                        child: Image.asset('assets/logo.png', width: 170, height: 170),
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -130,4 +130,5 @@ class _LoadingScreenState extends State<LoadingScreen> {
     );
   }
 }
+
 

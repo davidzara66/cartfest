@@ -69,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: Transform.scale(
                 scale: _scaleAnimation.value,
                 child: Image.asset(
-                  'assets/logo_icon.png',
+                  'assets/logo.png',
                   width: 280,
                   height: 280,
                   fit: BoxFit.contain,
@@ -84,5 +84,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
 
 

@@ -221,8 +221,14 @@ class StoryItem {
   final String id;
   final String userId;
   final String imageUrl;
+  final DateTime createdAt;
 
-  StoryItem({required this.id, required this.userId, required this.imageUrl});
+  StoryItem({
+    required this.id,
+    required this.userId,
+    required this.imageUrl,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
 }
 
 class ChatMessage {

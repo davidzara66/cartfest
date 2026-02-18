@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/mock_data_provider.dart';
 import '../theme/app_theme.dart';
@@ -43,7 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppTheme.neonMagenta,
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const DirectMessagesScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const DirectMessagesScreen()),
+          );
         },
         child: const Icon(Icons.chat),
       ),
@@ -56,7 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Feed'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: 'Ranking'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.emoji_events),
+            label: 'Ranking',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.groups), label: 'Equipos'),
           BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Eventos'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
@@ -77,24 +83,54 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(100),
-                    child: Image.asset('assets/logo_icon.png', width: 44, height: 44),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      width: 44,
+                      height: 44,
+                    ),
                   ),
                   const SizedBox(width: 10),
-                  const Text('Atajos', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                  const Text(
+                    'Atajos',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  ),
                 ],
               ),
             ),
             const Divider(color: Colors.white12),
             _shortcut('Feed', Icons.home_outlined, () => _goToTab(0)),
-            _shortcut('Explorar', Icons.directions_car_outlined, () => _goToTab(0)),
-            _shortcut('Ranking', Icons.emoji_events_outlined, () => _goToTab(1)),
-            _shortcut('Competidores', Icons.groups_2_outlined, () => _goToTab(0)),
-            _shortcut('Equipos', Icons.local_fire_department_outlined, () => _goToTab(2)),
-            _shortcut('Eventos', Icons.calendar_month_outlined, () => _goToTab(3)),
+            _shortcut(
+              'Explorar',
+              Icons.directions_car_outlined,
+              () => _goToTab(0),
+            ),
+            _shortcut(
+              'Ranking',
+              Icons.emoji_events_outlined,
+              () => _goToTab(1),
+            ),
+            _shortcut(
+              'Competidores',
+              Icons.groups_2_outlined,
+              () => _goToTab(0),
+            ),
+            _shortcut(
+              'Equipos',
+              Icons.local_fire_department_outlined,
+              () => _goToTab(2),
+            ),
+            _shortcut(
+              'Eventos',
+              Icons.calendar_month_outlined,
+              () => _goToTab(3),
+            ),
             _shortcut('En Vivo', Icons.live_tv_outlined, () => _goToTab(3)),
             _shortcut('Mensajeria', Icons.chat_bubble_outline, () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const DirectMessagesScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DirectMessagesScreen()),
+              );
             }),
             _shortcut('Perfil', Icons.person_outline, () => _goToTab(4)),
           ],

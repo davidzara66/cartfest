@@ -1,9 +1,19 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/app_models.dart';
 import '../services/social_sync_service.dart';
 
 class MockDataProvider extends ChangeNotifier {
   final SocialSyncService _sync = SocialSyncService();
+  RealtimeChannel? _socialChannel;
+  RealtimeChannel? _chatChannel;
+
+  MockDataProvider() {
+    _bootstrapSocialData();
+    _bootstrapChats();
+    _attachRealtimeSocial();
+    _attachRealtimeChats();
+  }
 
   UserProfile _currentUser = UserProfile(
     id: 'u0',
@@ -58,6 +68,9 @@ class MockDataProvider extends ChangeNotifier {
   ];
 
   final Set<String> _followingIds = {'u1', 'u2'};
+  final Set<String> _likedPostIds = {};
+  final Set<String> _savedPostIds = {};
+  final Map<String, List<String>> _postComments = {};
 
   final List<Vehicle> _vehicles = [
     Vehicle(
@@ -77,10 +90,8 @@ class MockDataProvider extends ChangeNotifier {
       stats: {'Power': 525, 'Motor': 9.5, 'Estetica': 9.8},
       votes: 312,
       trophies: 18,
-      imageUrl:
-          'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80',
-      ownerPhotoUrl:
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80',
+      ownerPhotoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
     ),
     Vehicle(
       id: '2',
@@ -99,10 +110,8 @@ class MockDataProvider extends ChangeNotifier {
       stats: {'Power': 720, 'Motor': 9.9, 'Estetica': 9.0},
       votes: 246,
       trophies: 14,
-      imageUrl:
-          'https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=1200&q=80',
-      ownerPhotoUrl:
-          'https://images.unsplash.com/photo-1545167622-3a6ac756afa4?auto=format&fit=crop&w=300&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=1200&q=80',
+      ownerPhotoUrl: 'https://images.unsplash.com/photo-1545167622-3a6ac756afa4?auto=format&fit=crop&w=300&q=80',
     ),
   ];
 
@@ -188,10 +197,109 @@ class MockDataProvider extends ChangeNotifier {
   List<Team> get teams => _teams;
   List<CarEvent> get events => _events;
   List<FeedPost> get posts => _posts;
-  List<StoryItem> get stories => _stories;
+  List<StoryItem> get stories {
+    final now = DateTime.now();
+    _stories.removeWhere((s) => now.difference(s.createdAt).inHours >= 24);
+    return _stories;
+  }
   List<EventChatMessage> get eventChat => _eventChat;
   List<EventRegistration> get eventRegistrations => _eventRegistrations;
   Set<String> get followingIds => _followingIds;
+  Set<String> get savedPostIds => _savedPostIds;
+
+  bool isPostLiked(String postId) => _likedPostIds.contains(postId);
+  bool isPostSaved(String postId) => _savedPostIds.contains(postId);
+  int getPostLikes(FeedPost post) => post.likes + (_likedPostIds.contains(post.id) ? 1 : 0);
+  List<String> getComments(String postId) => _postComments[postId] ?? [];
+
+  Future<void> _bootstrapSocialData() async {
+    final remotePosts = await _sync.fetchFeedPosts();
+    if (remotePosts.isNotEmpty) {
+      _posts
+        ..clear()
+        ..addAll(remotePosts);
+    }
+    _likedPostIds
+      ..clear()
+      ..addAll(await _sync.fetchPostLikes(_currentUser.id));
+    _savedPostIds
+      ..clear()
+      ..addAll(await _sync.fetchSavedPosts(_currentUser.id));
+    _postComments
+      ..clear()
+      ..addAll(await _sync.fetchCommentsMap());
+    notifyListeners();
+  }
+
+  Future<void> _bootstrapChats() async {
+    final messages = await _sync.fetchDirectMessages(_currentUser.id);
+    if (messages.isNotEmpty) {
+      _messages
+        ..clear()
+        ..addAll(messages);
+    }
+    if (_events.isNotEmpty) {
+      final eventMessages = await _sync.fetchEventChat(_events.first.id);
+      if (eventMessages.isNotEmpty) {
+        _eventChat
+          ..clear()
+          ..addAll(eventMessages);
+      }
+    }
+    notifyListeners();
+  }
+
+  void _attachRealtimeSocial() {
+    try {
+      final client = Supabase.instance.client;
+      _socialChannel = client.channel('public:social_live_sync')
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'feed_posts',
+          callback: (_) => _bootstrapSocialData(),
+        )
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'post_likes',
+          callback: (_) => _bootstrapSocialData(),
+        )
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'saved_posts',
+          callback: (_) => _bootstrapSocialData(),
+        )
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'post_comments',
+          callback: (_) => _bootstrapSocialData(),
+        )
+        ..subscribe();
+    } catch (_) {}
+  }
+
+  void _attachRealtimeChats() {
+    try {
+      final client = Supabase.instance.client;
+      _chatChannel = client.channel('public:chat_live_sync')
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'direct_messages',
+          callback: (_) => _bootstrapChats(),
+        )
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'event_chat',
+          callback: (_) => _bootstrapChats(),
+        )
+        ..subscribe();
+    } catch (_) {}
+  }
 
   UserProfile? findUserById(String id) {
     if (id == _currentUser.id) return _currentUser;
@@ -208,6 +316,59 @@ class MockDataProvider extends ChangeNotifier {
     return null;
   }
 
+  void createPost({required String caption, required String imageUrl}) {
+    final vehicle = _vehicles.first;
+    final newPost = FeedPost(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      authorId: _currentUser.id,
+      vehicleId: vehicle.id,
+      caption: caption,
+      createdAt: DateTime.now(),
+    );
+    _posts.insert(0, newPost);
+    final story = StoryItem(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: _currentUser.id,
+      imageUrl: imageUrl,
+      createdAt: DateTime.now(),
+    );
+    _stories.insert(0, story);
+    _sync.upsertFeedPost(newPost);
+    _sync.saveStory(story);
+    notifyListeners();
+  }
+
+  void togglePostLike(String postId) {
+    final willLike = !_likedPostIds.contains(postId);
+    if (willLike) {
+      _likedPostIds.add(postId);
+    } else {
+      _likedPostIds.remove(postId);
+    }
+    _sync.togglePostLike(userId: _currentUser.id, postId: postId, liked: willLike);
+    notifyListeners();
+  }
+
+  void togglePostSaved(String postId) {
+    final willSave = !_savedPostIds.contains(postId);
+    if (willSave) {
+      _savedPostIds.add(postId);
+    } else {
+      _savedPostIds.remove(postId);
+    }
+    _sync.togglePostSaved(userId: _currentUser.id, postId: postId, saved: willSave);
+    notifyListeners();
+  }
+
+  void addPostComment(String postId, String text) {
+    if (text.trim().isEmpty) return;
+    final list = _postComments.putIfAbsent(postId, () => []);
+    final comment = '${_currentUser.handle}: ${text.trim()}';
+    list.add(comment);
+    _sync.addPostComment(postId: postId, userId: _currentUser.id, text: comment);
+    notifyListeners();
+  }
+
   void toggleFollow(String userId) {
     final following = !_followingIds.contains(userId);
     if (following) {
@@ -215,11 +376,7 @@ class MockDataProvider extends ChangeNotifier {
     } else {
       _followingIds.remove(userId);
     }
-    _sync.toggleFollow(
-      followerId: _currentUser.id,
-      followedId: userId,
-      following: following,
-    );
+    _sync.toggleFollow(followerId: _currentUser.id, followedId: userId, following: following);
     notifyListeners();
   }
 
@@ -334,5 +491,16 @@ class MockDataProvider extends ChangeNotifier {
 
   void voteForVehicle(String vehicleId) {
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    if (_socialChannel != null) {
+      Supabase.instance.client.removeChannel(_socialChannel!);
+    }
+    if (_chatChannel != null) {
+      Supabase.instance.client.removeChannel(_chatChannel!);
+    }
+    super.dispose();
   }
 }

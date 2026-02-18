@@ -20,26 +20,54 @@ class SmartImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final normalized = source.trim();
+    final isWebLocalUrl =
+        normalized.startsWith('blob:') ||
+        normalized.startsWith('data:') ||
+        normalized.startsWith('file:');
+
     Widget img;
-    if (source.startsWith('http')) {
-      img = Image.network(source, width: width, height: height, fit: fit);
-    } else if (source.startsWith('assets/')) {
-      img = Image.asset(source, width: width, height: height, fit: fit);
-    } else if (!kIsWeb && source.isNotEmpty) {
-      img = Image.file(File(source), width: width, height: height, fit: fit);
-    } else {
-      img = Container(
+    if (normalized.startsWith('http') || isWebLocalUrl) {
+      img = Image.network(
+        normalized,
         width: width,
         height: height,
-        color: Colors.black12,
-        alignment: Alignment.center,
-        child: const Icon(Icons.image_not_supported),
+        fit: fit,
+        errorBuilder: (_, __, ___) => _fallback(),
       );
+    } else if (normalized.startsWith('assets/')) {
+      img = Image.asset(
+        normalized,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _fallback(),
+      );
+    } else if (!kIsWeb && normalized.isNotEmpty) {
+      img = Image.file(
+        File(normalized),
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _fallback(),
+      );
+    } else {
+      img = _fallback();
     }
 
     if (borderRadius != null) {
       return ClipRRect(borderRadius: borderRadius!, child: img);
     }
     return img;
+  }
+
+  Widget _fallback() {
+    return Container(
+      width: width,
+      height: height,
+      color: Colors.black12,
+      alignment: Alignment.center,
+      child: const Icon(Icons.image_not_supported),
+    );
   }
 }

@@ -385,6 +385,9 @@ class _FeedScreenState extends State<FeedScreen> {
   ) {
     final hp = (vehicle.stats['Power'] ?? vehicle.stats['Motor'] ?? 0).toInt();
     final following = provider.followingIds.contains(user.id);
+    final topMods = vehicle.modifications.take(4).toList();
+    final ownerPoints = vehicle.trophies * 100 + vehicle.votes;
+    final fakeFollowers = ownerPoints ~/ 7;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -433,13 +436,48 @@ class _FeedScreenState extends State<FeedScreen> {
           ),
           Stack(
             children: [
-              SmartImage(
-                source: vehicle.imageUrl,
-                height: 220,
+              Container(
+                height: 260,
                 width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppTheme.neonCyan.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      SmartImage(
+                        source: vehicle.imageUrl,
+                        height: 260,
+                        width: double.infinity,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.25),
+                              Colors.black.withValues(alpha: 0.6),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               Positioned(
-                top: 10,
+                top: 12,
+                left: 12,
+                child: _badgeLabel('Setup', AppTheme.neonMagenta),
+              ),
+              Positioned(
+                top: 12,
                 right: 10,
                 child: FilledButton(
                   onPressed: () {
@@ -453,9 +491,47 @@ class _FeedScreenState extends State<FeedScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.neonMagenta,
                   ),
-                  child: const Text('Ver en 3D'),
+                  child: const Text('Carro 360'),
                 ),
               ),
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: 70,
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _badgeLabel(
+                      'Pais: ${user.country}',
+                      const Color(0xFF2E67D9),
+                    ),
+                    _badgeLabel(
+                      'Dueno: ${vehicle.ownerName}',
+                      AppTheme.neonCyan,
+                    ),
+                    _badgeLabel(
+                      'Seguidores: $fakeFollowers',
+                      const Color(0xFFFF8C3A),
+                    ),
+                    _badgeLabel('Puntos: $ownerPoints', AppTheme.neonOrange),
+                    _badgeLabel('Dueno del carro', const Color(0xFF4EBA7C)),
+                  ],
+                ),
+              ),
+              if (topMods.isNotEmpty)
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  bottom: 10,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: topMods
+                        .map((m) => _badgeLabel(m, const Color(0xFF1F2A56)))
+                        .toList(),
+                  ),
+                ),
             ],
           ),
           Padding(
@@ -537,6 +613,21 @@ class _FeedScreenState extends State<FeedScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _badgeLabel(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
       ),
     );
   }

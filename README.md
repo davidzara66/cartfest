@@ -28,3 +28,33 @@ Para activarlo en GitHub:
 4. Esperar que termine el workflow `Deploy Flutter Web`.
 
 Con esa URL puedes probar en iPhone (Safari) y otros dispositivos.
+
+## Supabase (SQL listo)
+
+Se incluyo el schema completo en:
+
+- `supabase/schema.sql`
+
+Tablas incluidas:
+
+- `profiles`
+- `follows`
+- `direct_messages`
+- `event_chat`
+- `event_registrations`
+- `feed_posts`
+- `story_items`
+
+Incluye:
+
+- RLS habilitado.
+- Politicas para lectura/escritura segun usuario autenticado.
+- Validaciones de `classification` (8 niveles) y `origin`.
+
+### Pasos
+
+1. Abrir Supabase > SQL Editor.
+2. Ejecutar `supabase/schema.sql`.
+3. En Auth > Providers > Email:
+   - activar Auto Confirm
+   - desactivar confirmacion de email
